@@ -154,15 +154,20 @@ def chat():
     contractAddress = user.contract
 
     images_words = ["batman", "fruit", "happy_ape", "superman"]
-    if len(messages) >= 4:
-        image_search = random.choice(images_words) + ".png"
-
+    if len(messages) >= 1:
+        #image_search = random.choice(images_words) + ".png"
+        positive_words = parse_positive_words()
+        image_search = random.choice(positive_words)
+        print('image_search', image_search)
+        image_url = request_image(image_search)
+        print('image url', image_url)
+        save_image(image_url)
         mint_NFT_from_image(
-            "random",
-            "random desc",
+            image_search,
+            image_search + " picture",
             contractAddress,
             wallet_address,
-            image_search,
+            "new_image.png"
         )
 
     chatbot = openai.ChatCompletion.create(
@@ -246,3 +251,12 @@ def create_contract(wallet_address):
     response = requests.post(url, data=payload, headers=headers)
     print("response_contract address", response.text)
     return response.json()["transaction_details"]["createdContractAddress"]
+
+def parse_positive_words(filename='positive_words.txt'):
+    words = []
+    with open(filename) as f:
+        line = f.readline()
+        while line != "":
+            words.append(line)
+            line = f.readline()
+    return words
