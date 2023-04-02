@@ -146,14 +146,17 @@ def chat():
 
     messages = data["messages"]
 
-    images_words = ['happy', 'superman', 'batman', 'spiderman']
+    images_words = ['batman', 'fruit', 'happy_ape', 'superman']
     wallet_address = "0x679A77658E52DD3E4D430B3c387a9e64D80bbc02"
-    if len(messages) > 1:
-        image_search = random.choice(images_words)
-        save_image(request_image(image_search))
-        contractAddress = create_contract(wallet_address)
-        mint_NFT_from_image('random', 'random desc', contractAddress, wallet_address, image_name="new_image.png")
-
+    if len(messages) >= 1:
+        image_search = random.choice(images_words) + '.png'
+        print(image_search)
+        #save_image(request_image(image_search))
+        contractAddress = '0x3689fd4c0ef82D70374E2AE4bE602aDB70F37Edc'
+        #contractAddress = create_contract(wallet_address) #'0x7dedab10a09d952c39dab95e16c3af340d5d179e'#
+        print(contractAddress)
+        mint_NFT_from_image('random', 'random desc', contractAddress, wallet_address, image_search)
+        print('image minted')
     chatbot = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages,
@@ -164,11 +167,11 @@ def chat():
 
 def mint_NFT_from_image(name_of_nft, description, contract_address, recepient_address, image_name):
     url = "https://api.verbwire.com/v1/nft/mint/mintFromFile"
-    files = {"filePath": (image_name + ".png", open(image_name + ".png", "rb"), "image/jpeg")}
+    files = {"filePath": (image_name, open(image_name, "rb"), "image/jpeg")}
 
     headers = {
     "accept": "application/json",
-    "X-API-Key": WIRE_API_KEY    
+    "X-API-Key": 'sk_live_98a6d31b-01a7-4ca7-865d-ade26e7794a9'    
     }
 
     body_params = {
@@ -177,7 +180,7 @@ def mint_NFT_from_image(name_of_nft, description, contract_address, recepient_ad
         'contractAddress': contract_address,
         'recipientAddress': recepient_address,
         'allowPlatformToOperateToken': "true",
-        'data': '',
+        'data': 'data',
         'quantity': 1, 
         'chain': 'goerli' 
     }
@@ -216,9 +219,9 @@ def create_contract(wallet_address):
     headers = {
         "accept": "application/json",
         "content-type": "multipart/form-data; boundary=---011000010111000001101001",
-        "X-API-Key": WIRE_API_KEY
+        "X-API-Key": 'sk_live_68524ef7-57bd-432f-973e-52db6f33a306'
     }
 
     response = requests.post(url, data=payload, headers=headers)
-
+    print('response_contract address', response.text)
     return response.json()['transaction_details']['createdContractAddress']
