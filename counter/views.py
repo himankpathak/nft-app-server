@@ -36,11 +36,14 @@ def signup():
             wallet_address = data["wallet_address"]
             password = data["password"]
 
+            c = create_contract(wallet_address)
+
             user = Users(
                 first_name=firstName,
                 last_name=lastName,
                 email=email,
                 wallet_address=wallet_address,
+                contract=c,
                 password=generate_password_hash(password),
                 is_verified=True,
             )
@@ -140,23 +143,28 @@ def extract_image_token_uri(image_metadata):
 
 @counter_app.route("/chat", methods=["GET", "POST"])
 def chat():
-    #user = Users.query.filter_by(email=email).first()
-    #wallet_address = user.wallet_address
     data = json.loads(request.data)
 
     messages = data["messages"]
+    email = data["email"]
 
-    images_words = ['batman', 'fruit', 'happy_ape', 'superman']
-    wallet_address = "0x679A77658E52DD3E4D430B3c387a9e64D80bbc02"
-    if len(messages) >= 1:
-        image_search = random.choice(images_words) + '.png'
-        print(image_search)
-        #save_image(request_image(image_search))
-        contractAddress = '0x3689fd4c0ef82D70374E2AE4bE602aDB70F37Edc'
-        #contractAddress = create_contract(wallet_address) #'0x7dedab10a09d952c39dab95e16c3af340d5d179e'#
-        print(contractAddress)
-        mint_NFT_from_image('random', 'random desc', contractAddress, wallet_address, image_search)
-        print('image minted')
+    user = Users.query.filter_by(email=email).first()
+
+    wallet_address = user.wallet_address
+    contractAddress = user.contract
+
+    images_words = ["batman", "fruit", "happy_ape", "superman"]
+    if len(messages) >= 4:
+        image_search = random.choice(images_words) + ".png"
+
+        mint_NFT_from_image(
+            "random",
+            "random desc",
+            contractAddress,
+            wallet_address,
+            image_search,
+        )
+
     chatbot = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages,
@@ -165,40 +173,52 @@ def chat():
     messages.append(chatbot.choices[0].message)
     return jsonify(messages), 200
 
-def mint_NFT_from_image(name_of_nft, description, contract_address, recepient_address, image_name):
+
+def mint_NFT_from_image(
+    name_of_nft, description, contract_address, recepient_address, image_name
+):
     url = "https://api.verbwire.com/v1/nft/mint/mintFromFile"
     files = {"filePath": (image_name, open(image_name, "rb"), "image/jpeg")}
 
     headers = {
-    "accept": "application/json",
-    "X-API-Key": 'sk_live_98a6d31b-01a7-4ca7-865d-ade26e7794a9'    
+        "accept": "application/json",
+        "X-API-Key": WIRE_API_KEY,
     }
 
     body_params = {
-        'name': name_of_nft,
-        'description': description,
-        'contractAddress': contract_address,
-        'recipientAddress': recepient_address,
-        'allowPlatformToOperateToken': "true",
-        'data': 'data',
-        'quantity': 1, 
-        'chain': 'goerli' 
+        "name": name_of_nft,
+        "description": description,
+        "contractAddress": contract_address,
+        "recipientAddress": recepient_address,
+        "allowPlatformToOperateToken": "true",
+        "data": "data",
+        "quantity": 1,
+        "chain": "goerli",
     }
-    response = requests.post(url, headers=headers, data=body_params, files=files)
+    response = requests.post(
+        url, headers=headers, data=body_params, files=files
+    )
     print(response.json())
+
 
 def request_image(search):
     url = "https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/Search/ImageSearchAPI"
 
-    querystring = {"q":search,"pageNumber":"1","pageSize":"10","autoCorrect":"true"}
+    querystring = {
+        "q": search,
+        "pageNumber": "1",
+        "pageSize": "10",
+        "autoCorrect": "true",
+    }
 
     headers = {
         "X-RapidAPI-Key": "f1bc582251msh3c7fa67b028c964p1d56f5jsnceb5397f1478",
-        "X-RapidAPI-Host": "contextualwebsearch-websearch-v1.p.rapidapi.com"
+        "X-RapidAPI-Host": "contextualwebsearch-websearch-v1.p.rapidapi.com",
     }
 
     response = requests.request("GET", url, headers=headers, params=querystring)
-    return response.json()['value'][random.randint(0, 9)]['url']
+    return response.json()["value"][random.randint(0, 9)]["url"]
+
 
 def save_image(image_url):
     filename = "new_image.png"
@@ -206,22 +226,23 @@ def save_image(image_url):
 
     if r.status_code == 200:
         r.raw.decode_content = True
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             shutil.copyfileobj(r.raw, f)
-        print('Image downloaded successfully')
+        print("Image downloaded successfully")
     else:
-        print('Image could not be downloaded')
+        print("Image could not be downloaded")
+
 
 def create_contract(wallet_address):
     url = "https://api.verbwire.com/v1/nft/deploy/deploySimpleContract"
 
-    payload = f"-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"chain\"\r\n\r\ngoerli\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"contractType\"\r\n\r\nnft721\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"contractName\"\r\n\r\nrandom\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"contractSymbol\"\r\n\r\nrandom\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"recipientAddress\"\r\n\r\n{wallet_address}\r\n-----011000010111000001101001--\r\n\r\n"
+    payload = f'-----011000010111000001101001\r\nContent-Disposition: form-data; name="chain"\r\n\r\ngoerli\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name="contractType"\r\n\r\nnft721\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name="contractName"\r\n\r\nrandom\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name="contractSymbol"\r\n\r\nrandom\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name="recipientAddress"\r\n\r\n{wallet_address}\r\n-----011000010111000001101001--\r\n\r\n'
     headers = {
         "accept": "application/json",
         "content-type": "multipart/form-data; boundary=---011000010111000001101001",
-        "X-API-Key": 'sk_live_68524ef7-57bd-432f-973e-52db6f33a306'
+        "X-API-Key": WIRE_API_KEY,
     }
 
     response = requests.post(url, data=payload, headers=headers)
-    print('response_contract address', response.text)
-    return response.json()['transaction_details']['createdContractAddress']
+    print("response_contract address", response.text)
+    return response.json()["transaction_details"]["createdContractAddress"]

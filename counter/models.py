@@ -18,6 +18,7 @@ class Users(db.Model):
         last_name,
         email,
         wallet_address,
+        contract,
         password,
         is_verified,
     ):
@@ -25,6 +26,7 @@ class Users(db.Model):
         self.last_name = last_name
         self.email = email
         self.wallet_address = wallet_address
+        self.contract = contract
         self.password = password
         self.is_verified = is_verified
 
