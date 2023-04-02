@@ -58,7 +58,7 @@ def signin():
         email = data["email"]
         password = data["password"]
         user = Users.query.filter_by(email=data["email"]).first()
-        if user and check_password_hash(user.password) == password:
+        if user and check_password_hash(user.password, password):
             return {}, 200
         return {}, 400
 
