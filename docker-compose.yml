@@ -1,0 +1,32 @@
+version: "2"
+services:
+  api:
+    build: .
+    ports:
+      - "80:80"
+    links:
+      - db:postgres
+    container_name: app-api
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+    image: sanjeevani.azurecr.io/api
+    environment:
+      FLASK_APP: manage.py
+      FLASK_ENV: development
+      SECRET_KEY: "my_secret_key"
+      DB_USERNAME: app_user
+      DB_PASSWORD: app_password
+      DB_HOST: postgres
+      DATABASE_NAME: app
+  db:
+    image: postgres:13-alpine
+    restart: always
+    container_name: app-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+      POSTGRES_DB: app
