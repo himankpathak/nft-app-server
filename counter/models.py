@@ -7,6 +7,8 @@ class Users(db.Model):
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     wallet_address = db.Column(db.String(200), unique=True, nullable=False)
+    contract = db.Column(db.String(200), nullable=True)
+
     password = db.Column(db.String(120))
     is_verified = db.Column(db.Boolean, default=True, nullable=False)
 
