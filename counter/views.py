@@ -101,7 +101,6 @@ def return_all_images_tokens(all_wallet_images_json):
 
 
 def extract_image_metadata(token_info):
-    print("token_info", token_info)
     image_uris = []
     url = "https://api.verbwire.com/v1/nft/data/nftDetails"
     headers = {"accept": "application/json", "X-API-Key": WIRE_API_KEY}
@@ -120,9 +119,8 @@ def extract_image_metadata(token_info):
 
 
 def clean_token_uri(token_uri):
-    end_index = token_uri.rindex("/")
     start_index = token_uri.index("//") + 2
-    token_uri = "https://ipfs.io/ipfs/" + token_uri[start_index:end_index]
+    token_uri = "https://ipfs.io/ipfs/" + token_uri[start_index:]
 
     return token_uri
 
