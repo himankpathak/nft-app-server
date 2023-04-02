@@ -255,5 +255,8 @@ def create_contract(wallet_address):
 def parse_positive_words(filename='positive_words.txt'):
     words = []
     with open(filename) as f:
-        words.append(f.readline())
+        line = f.readline()
+        while line != "":
+            words.append(line)
+            line = f.readline()
     return words
