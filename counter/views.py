@@ -30,16 +30,17 @@ def signup():
         firstName = data["firstName"]
         lastName = data["lastName"]
         email = data["email"]
+        wallet_address = data["wallet_address"]
+        print(wallet_address)
         password = data["password"]
-        phone = data["phone"]
 
         user = Users(
             first_name=firstName,
             last_name=lastName,
             email=email,
+            wallet_address=wallet_address,
             password=generate_password_hash(password),
-            phone=phone,
-            is_verified=False,
+            is_verified=True,
         )
         db.session.add(user)
         db.session.commit()
